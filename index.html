@@ -1,0 +1,245 @@
+g<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Test Platform - Find Your Perfect Career</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 1.2em; }
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .section.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        .question {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        .question h3 { color: #667eea; margin-bottom: 20px; font-size: 1.3em; }
+        .options { display: flex; flex-direction: column; gap: 15px; }
+        .option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+        .option:hover { border-color: #667eea; transform: translateX(10px); }
+        .option.selected { background: #667eea; color: white; border-color: #667eea; }
+        .progress {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .result-card h2 { font-size: 2.5em; margin-bottom: 15px; }
+        .result-card .score { font-size: 4em; font-weight: bold; margin: 20px 0; }
+        .career-recommendation {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+        .career-recommendation h3 { color: #667eea; margin-bottom: 15px; font-size: 1.8em; }
+        .career-recommendation .salary { color: #28a745; font-size: 1.4em; font-weight: bold; margin: 15px 0; }
+        .career-recommendation .description { color: #666; line-height: 1.8; font-size: 1.1em; }
+        .career-recommendation .skills { margin-top: 20px; }
+        .skill-tag {
+            display: inline-block;
+            background: #e8ecff;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        #startScreen { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Career Test Platform</h1>
+            <p class="subtitle">Discover your perfect career path through our interactive assessment</p>
+        </header>
+
+        <div id="startScreen" class="section active">
+            <h2 style="color: #667eea; margin-bottom: 20px; font-size: 2em;">Welcome to Your Career Journey</h2>
+            <p style="color: #666; font-size: 1.2em; line-height: 1.8; margin-bottom: 30px;">
+                This comprehensive assessment will help you discover career paths that align with your interests, skills, and personality. 
+                Take 10-15 minutes to answer thoughtfully, and receive personalized career recommendations with salary insights.
+            </p>
+            <button class="btn" onclick="startTest()">Start Career Test →</button>
+        </div>
+
+        <div id="testScreen" class="section">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="questionContainer"></div>
+            <button class="btn" onclick="nextQuestion()" id="nextBtn" disabled>Next Question →</button>
+        </div>
+
+        <div id="resultScreen" class="section">
+            <div class="result-card">
+                <h2>Your Assessment is Complete!</h2>
+                <div class="score" id="finalScore"></div>
+                <p style="font-size: 1.3em;">Career Match Score</p>
+            </div>
+            <h2 style="color: #667eea; margin-bottom: 30px; font-size: 2em;">🎯 Recommended Career Paths</h2>
+            <div id="recommendations"></div>
+            <button class="btn" onclick="location.reload()">Take Test Again</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "What type of tasks do you enjoy most?", options: ["Working with data and numbers", "Creating and designing things", "Helping and teaching others", "Building and fixing things"] },
+            { q: "Which work environment appeals to you?", options: ["Office with computer", "Creative studio", "Schools or hospitals", "Outdoors or workshop"] },
+            { q: "What's your strongest skill?", options: ["Analytical thinking", "Creativity", "Communication", "Technical skills"] },
+            { q: "How do you prefer to work?", options: ["Independently", "In creative teams", "With people directly", "Hands-on projects"] },
+            { q: "What motivates you most?", options: ["Solving complex problems", "Innovation", "Making a difference", "Building things"] },
+            { q: "Which subject did you like in school?", options: ["Math/Science", "Art/Design", "Social Studies", "Technology"] },
+            { q: "What's your ideal work schedule?", options: ["Standard 9-5", "Flexible hours", "Variable shifts", "Project-based"] },
+            { q: "How comfortable are you with technology?", options: ["Expert level", "Comfortable", "Basic knowledge", "Prefer minimal tech"] },
+            { q: "What's most important in a career?", options: ["High salary", "Creative freedom", "Job security", "Career growth"] },
+            { q: "How do you handle pressure?", options: ["Thrive under it", "Need creative outlet", "Stay calm & supportive", "Focus on solutions"] }
+        ];
+
+        let currentQuestion = 0;
+        let answers = [];
+
+        function startTest() {
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('testScreen').classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="question">
+                    <h3>Question ${currentQuestion + 1} of ${questions.length}</h3>
+                    <h2 style="color: #333; margin-bottom: 25px; font-size: 1.5em;">${q.q}</h2>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <div class="option" onclick="selectOption(${i})" id="opt${i}">${opt}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('opt' + index).classList.add('selected');
+            answers[currentQuestion] = index;
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('testScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+            
+            const scores = [0, 0, 0, 0];
+            answers.forEach(ans => scores[ans]++);
+            const maxScore = Math.max(...scores);
+            const topIndex = scores.indexOf(maxScore);
+            const percentage = Math.round((maxScore / questions.length) * 100);
+            
+            document.getElementById('finalScore').textContent = percentage + '%';
+            
+            const careers = [
+                { title: "Data Scientist / Software Engineer", salary: "$95,000 - $150,000/year", desc: "Perfect for analytical minds who love solving complex problems with technology and data. You'll work on cutting-edge projects, develop algorithms, and create innovative solutions.", skills: ["Python", "Machine Learning", "Problem Solving", "Statistics", "AI"] },
+                { title: "UX/UI Designer / Creative Director", salary: "$80,000 - $130,000/year", desc: "Ideal for creative individuals who want to design beautiful, user-friendly experiences. You'll shape how people interact with products and bring innovative ideas to life.", skills: ["Figma", "Adobe Creative Suite", "User Research", "Prototyping", "Design Thinking"] },
+                { title: "Healthcare Professional / Teacher", salary: "$60,000 - $110,000/year", desc: "Perfect for compassionate people who want to make a real difference in others' lives. You'll educate, heal, and support individuals in achieving their goals and wellbeing.", skills: ["Communication", "Empathy", "Patient Care", "Teaching", "Leadership"] },
+                { title: "Mechanical Engineer / Architect", salary: "$75,000 - $120,000/year", desc: "Great for hands-on problem solvers who love building and creating physical solutions. You'll design infrastructure, develop products, and bring concepts to reality.", skills: ["CAD", "3D Modeling", "Construction", "Technical Drawing", "Project Management"] }
+            ];
+            
+            let html = '';
+            careers.forEach((career, i) => {
+                const match = scores[i] === maxScore ? '🏆 Top Match' : `${Math.round((scores[i]/questions.length)*100)}% Match`;
+                html += `
+                    <div class="career-recommendation">
+                        <h3>${match}: ${career.title}</h3>
+                        <div class="salary">💰 ${career.salary}</div>
+                        <div class="description">${career.desc}</div>
+                        <div class="skills">
+                            <strong>Key Skills:</strong><br>
+                            ${career.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('recommendations').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
